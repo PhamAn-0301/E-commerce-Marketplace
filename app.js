@@ -9,6 +9,8 @@ const app = express();
 // Thiết lập view engine Handlebars
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
+// Middleware để parse form data
+app.use(express.urlencoded({ extended: true }));
 
 // Static files
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -16,6 +18,9 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // Sử dụng routes
 const homeRoute = require('./routes/home');
 app.use('/', homeRoute);
+// Route cho đăng ký
+const authRoute = require('./routes/auth');
+app.use('/', authRoute);
 
 // Khởi động server nếu chạy trực tiếp
 if (require.main === module) {

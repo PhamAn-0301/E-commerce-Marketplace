@@ -1,0 +1,30 @@
+<html>
+<head>
+    <title>Đăng ký tài khoản</title>
+    <link rel="stylesheet" href="/public/style.css">
+</head>
+<body>
+    <div class="register-container">
+        <h2>Đăng ký tài khoản</h2>
+        {{#if error}}
+            <div class="error">{{error}}</div>
+        {{/if}}
+        {{#if success}}
+            <div class="success">{{success}}</div>
+        {{/if}}
+        <form method="POST" action="/register">
+            <input type="text" name="full_name" placeholder="Họ tên" required><br>
+            <input type="email" name="email" placeholder="Email" required><br>
+            <input type="password" name="password" placeholder="Mật khẩu" required><br>
+            <input type="text" name="phone" placeholder="Số điện thoại" required><br>
+            <select name="role" required>
+                <option value="">Chọn vai trò</option>
+                <option value="buyer">Người mua</option>
+                <option value="seller">Người bán</option>
+            </select><br>
+            <button type="submit">Đăng ký</button>
+        </form>
+        <a href="/">Quay lại trang chủ</a>
+    </div>
+</body>
+</html>
