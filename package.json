@@ -1,0 +1,16 @@
+{
+  "name": "ecommerce-marketplace",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "service": "node service.js",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "hbs": "^4.2.1"
+  }
+}
