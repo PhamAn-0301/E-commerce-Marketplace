@@ -1,3 +1,6 @@
+// API Auth (RESTful)
+const apiAuthRoute = require('./routes/apiAuth');
+app.use('/', apiAuthRoute);
 
 const express = require('express');
 const path = require('path');
@@ -21,6 +24,10 @@ app.use('/', homeRoute);
 // Route cho đăng ký
 const authRoute = require('./routes/auth');
 app.use('/', authRoute);
+
+// Route mẫu cần xác thực JWT
+const protectedRoute = require('./routes/protected');
+app.use('/', protectedRoute);
 
 // Khởi động server nếu chạy trực tiếp
 if (require.main === module) {
