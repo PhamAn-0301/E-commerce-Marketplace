@@ -1,6 +1,3 @@
-// API Auth (RESTful)
-const apiAuthRoute = require('./routes/apiAuth');
-app.use('/', apiAuthRoute);
 
 const express = require('express');
 const path = require('path');
@@ -8,6 +5,13 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+
+// Middleware để parse JSON body cho REST API
+app.use(express.json());
+
+// API Auth (RESTful)
+const apiAuthRoute = require('./routes/apiAuth');
+
 
 // Thiết lập view engine Handlebars
 app.set('views', path.join(__dirname, 'views'));
@@ -21,13 +25,11 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // Sử dụng routes
 const homeRoute = require('./routes/home');
 app.use('/', homeRoute);
-// Route cho đăng ký
-const authRoute = require('./routes/auth');
-app.use('/', authRoute);
 
-// Route mẫu cần xác thực JWT
+// Route RESTful cho xác thực và bảo vệ
+app.use('/', apiAuthRoute);
 const protectedRoute = require('./routes/protected');
-app.use('/', protectedRoute);
+app.use('/api/protected', protectedRoute);
 
 // Khởi động server nếu chạy trực tiếp
 if (require.main === module) {
