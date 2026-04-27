@@ -1,3 +1,0 @@
-// Entry point for background services (queues, jobs, etc)
-
-// ...existing code...

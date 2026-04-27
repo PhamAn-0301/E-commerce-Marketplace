@@ -1,21 +1,6 @@
-// Xử lý đăng nhập từ form (POST /login)
-exports.loginFormHandler = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const result = await userService.loginUser(email, password);
-        if (result.error) {
-            return res.render('login', { error: result.error });
-        }
-        // Đăng nhập thành công, chuyển về trang chủ
-        return res.redirect('/');
-    } catch (err) {
-        console.error(err);
-        res.render('login', { error: 'Đăng nhập thất bại.' });
-    }
-};
 const userService = require('../services/userService');
 
-// Đăng ký API: POST /auth/register
+// Đăng ký API: POST /register
 exports.registerApi = async (req, res) => {
     try {
         const result = await userService.registerUser(req.body);
@@ -29,7 +14,7 @@ exports.registerApi = async (req, res) => {
     }
 };
 
-// Đăng nhập API: POST /auth/login
+// Đăng nhập API: POST /login
 exports.loginApi = async (req, res) => {
     try {
         const { email, password } = req.body;
