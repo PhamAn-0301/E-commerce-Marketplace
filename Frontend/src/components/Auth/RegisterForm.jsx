@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import API from '../services/api';
+import styles from './AuthForm.module.css';
+import API from '../../services/api';
 
-export default function Register({ onRegister }) {
+export default function RegisterForm({ onRegister }) {
   const [full_name, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +25,7 @@ export default function Register({ onRegister }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 320, margin: '40px auto' }}>
+    <form onSubmit={handleSubmit} className={styles['auth-form']}>
       <h2>Đăng ký</h2>
       <input
         type="text"
@@ -32,7 +33,6 @@ export default function Register({ onRegister }) {
         value={full_name}
         onChange={e => setFullName(e.target.value)}
         required
-        style={{ width: '100%', marginBottom: 8 }}
       />
       <input
         type="email"
@@ -40,7 +40,6 @@ export default function Register({ onRegister }) {
         value={email}
         onChange={e => setEmail(e.target.value)}
         required
-        style={{ width: '100%', marginBottom: 8 }}
       />
       <input
         type="password"
@@ -48,7 +47,6 @@ export default function Register({ onRegister }) {
         value={password}
         onChange={e => setPassword(e.target.value)}
         required
-        style={{ width: '100%', marginBottom: 8 }}
       />
       <input
         type="text"
@@ -56,20 +54,18 @@ export default function Register({ onRegister }) {
         value={phone}
         onChange={e => setPhone(e.target.value)}
         required
-        style={{ width: '100%', marginBottom: 8 }}
       />
       <select
         value={role}
         onChange={e => setRole(e.target.value)}
         required
-        style={{ width: '100%', marginBottom: 8 }}
       >
         <option value="buyer">Người mua</option>
         <option value="seller">Người bán</option>
       </select>
-      <button type="submit" style={{ width: '100%' }}>Đăng ký</button>
-      {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
-      {success && <div style={{ color: 'green', marginTop: 8 }}>{success}</div>}
+      <button type="submit">Đăng ký</button>
+      {error && <div className={styles.error}>{error}</div>}
+      {success && <div className={styles.success}>{success}</div>}
     </form>
   );
 }

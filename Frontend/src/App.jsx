@@ -1,7 +1,9 @@
 import { useState } from 'react';
+
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Login from './pages/User/Login';
+import Register from './pages/User/Register';
+import Navbar from './components/Navbar/Navbar';
 
 function App() {
   const [page, setPage] = useState('home');
@@ -20,22 +22,13 @@ function App() {
   };
 
   return (
-    <div style={{ fontFamily: 'sans-serif' }}>
-      <nav style={{ display: 'flex', gap: 16, justifyContent: 'center', margin: 24 }}>
-        <button onClick={() => setPage('home')}>Trang chủ</button>
-        {!user && <button onClick={() => setPage('login')}>Đăng nhập</button>}
-        {!user && <button onClick={() => setPage('register')}>Đăng ký</button>}
-        {user && <button onClick={handleLogout}>Đăng xuất</button>}
-      </nav>
-      <div>
-        {page === 'home' && <Home />}
+    <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', background: '#f6f8fa' }}>
+      <Navbar user={user} onNavigate={setPage} onLogout={handleLogout} />
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
+        {page === 'home' && <Home user={user} />}
         {page === 'login' && <Login onLogin={handleLogin} />}
         {page === 'register' && <Register onRegister={handleRegister} />}
-        {user && (
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <b>Xin chào, {user.name || user.email}!</b>
-          </div>
-        )}
+        {/* Greeting and dashboard now handled in Home component */}
       </div>
     </div>
   );
