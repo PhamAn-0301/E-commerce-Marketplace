@@ -12,12 +12,16 @@ app.use(cors({
 
 const apiAuthRoute = require('./routes/apiAuth');
 const protectedRoute = require('./routes/protected');
+const productRoutes = require('./routes/productRoutes');
 
 app.use('/', apiAuthRoute);
 app.use('/api/protected', protectedRoute);
+app.use('/api/products', productRoutes);
 
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
+    // Chỉ start server khi chạy trực tiếp file app.js.
+    // Khi test hoặc require app từ file khác, Express app được export mà không tự listen.
     app.listen(PORT, () => {
         console.log(`Server running at http://localhost:${PORT}`);
     });

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000', // Thay đổi nếu backend chạy port khác
+      '/api': 'http://localhost:3000', // Thay đổi nếu backend chạy port khác
     },
   },
 })

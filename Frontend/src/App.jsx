@@ -1,34 +1,48 @@
 import { useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
 import Home from './pages/Home';
 import Login from './pages/User/Login';
 import Register from './pages/User/Register';
+import ProductDetail from './pages/ProductDetail';
 import Navbar from './components/Navbar/Navbar';
 
 function App() {
-  const [page, setPage] = useState('home');
   const [user, setUser] = useState(null);
 
   const handleLogin = (userData) => {
-    setUser(userData);
-    setPage('home');
-  };
-  const handleRegister = () => {
-    setPage('login');
+    setUser(userData.user || userData);
   };
   const handleLogout = () => {
     setUser(null);
-    setPage('login');
   };
 
   return (
-    <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', background: '#f6f8fa' }}>
-      <Navbar user={user} onNavigate={setPage} onLogout={handleLogout} />
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
-        {page === 'home' && <Home user={user} />}
-        {page === 'login' && <Login onLogin={handleLogin} />}
-        {page === 'register' && <Register onRegister={handleRegister} />}
-        {/* Greeting and dashboard now handled in Home component */}
+    <BrowserRouter>
+      <AppLayout user={user} onLogin={handleLogin} onLogout={handleLogout} />
+    </BrowserRouter>
+  );
+}
+
+function AppLayout({ user, onLogin, onLogout }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/login');
+  };
+
+  return (
+    <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', background: '#f5f5f5' }}>
+      <Navbar user={user} onLogout={handleLogout} />
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 18px 32px' }}>
+        <Routes>
+          <Route path="/" element={<Home user={user} />} />
+          <Route path="/login" element={<Login onLogin={onLogin} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/products/:id" element={<ProductDetail />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </div>
   );
