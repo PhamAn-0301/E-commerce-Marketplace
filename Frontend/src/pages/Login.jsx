@@ -10,10 +10,10 @@ export default function Login({ onLogin }) {
     e.preventDefault();
     setError('');
     try {
-      const res = await API.post('/api/auth/login', { email, password });
+      const res = await API.post('/login', { email, password });
       onLogin(res.data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Đăng nhập thất bại');
+      setError(err.response?.data?.error || 'Đăng nhập thất bại');
     }
   };
 
