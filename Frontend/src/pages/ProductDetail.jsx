@@ -60,7 +60,7 @@ export default function ProductDetail() {
     );
   }
 
-  const imageUrl = product.image_url || product.image || product.thumbnail_url;
+  const imageUrl = product.image_url || product.image || product.thumbnail_url || product.thumbnail;
   const productName = product.name || product.title || 'Sản phẩm';
 
   return (
