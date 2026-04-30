@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 
 import styles from './Navbar.module.css';
-import Logo from '../Logo';
+import Logo from '../../../features/buyer/pages/Logo';
 
 export default function Navbar({ user, onLogout }) {
   return (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import API from '../services/api';
+import API from '../../../services/api';
 import styles from './ProductDetail.module.css';
 
 export default function ProductDetail() {

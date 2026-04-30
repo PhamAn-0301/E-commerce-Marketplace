@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import BuyerHome from '../components/BuyerHome';
-import ShopHome from '../components/ShopHome';
-import AdminHome from '../components/AdminHome';
-import API from '../services/api';
+import BuyerHome from '../components/buyer/BuyerHome';
+import ShopHome from '../../seller/components/ShopHome';
+import AdminHome from '../../admin/components/AdminHome';
+import API from '../../../shared/services/api';
 import styles from './Home.module.css';
 
 // Hàm lấy role từ user prop, localStorage hoặc context tuỳ app

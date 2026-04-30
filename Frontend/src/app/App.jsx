@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
-import Home from './pages/Home';
-import Login from './pages/User/Login';
-import Register from './pages/User/Register';
-import ProductDetail from './pages/ProductDetail';
-import Navbar from './components/Navbar/Navbar';
+import Home from '../features/buyer/pages/Home';
+import Login from '../features/Auth/pages/Login';
+import Register from '../features/Auth/pages/Register';
+import ProductDetail from '../features/buyer/pages/ProductDetail';
+import Navbar from '../shared/components/Navbar/Navbar';
 
 function App() {
   const [user, setUser] = useState(null);
