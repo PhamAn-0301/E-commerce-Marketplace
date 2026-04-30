@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import styles from '../pages/Home.module.css';
-import API from '../../services/api';
+import API from '../../../shared/services/api';
 
 // Các component phụ trợ (có thể tách file riêng nếu muốn)
 function SuggestionImage({ suggestion }) {

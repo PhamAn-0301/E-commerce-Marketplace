@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from './AuthForm.module.css';
-import API from '../../../services/api';
+import API from '../../../shared/services/api';
 
 export default function RegisterForm({ onRegister }) {
   const [full_name, setFullName] = useState('');
