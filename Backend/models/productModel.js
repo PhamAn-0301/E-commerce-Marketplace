@@ -13,15 +13,14 @@ const ACTIVE_STATUS = 'active';
 const PRODUCT_SEARCH_FIELDS = [
   'id',
   'name',
-  'description',
-  'price',
+  'short_des',
+  'full_des',
+  'min_price',
   'status',
   'category_id',
-  'thumbnail',
-  'thumbnail_url',
-  'image_url',
-  'stock',
-  'stock_quantity',
+  'shop_id',
+  'thumbnails',
+  'total_stock',
   'created_at',
 ];
 
@@ -29,10 +28,8 @@ const PRODUCT_SEARCH_FIELDS = [
 const PRODUCT_SUGGESTION_FIELDS = [
   'id',
   'name',
-  'price',
-  'thumbnail',
-  'thumbnail_url',
-  'image_url',
+  'min_price',
+  'thumbnails',
 ];
 
 /**
@@ -63,7 +60,8 @@ function buildPostgresProductWhere({ search, categoryId } = {}) {
   if (search) {
     // Thêm điều kiện tìm kiếm theo tên hoặc mô tả (không phân biệt hoa thường)
     values.push(`%${search}%`);
-    conditions.push(`(name ILIKE $${values.length} OR description ILIKE $${values.length})`);
+    const searchParam = `$${values.length}`;
+    conditions.push(`(name ILIKE ${searchParam} OR short_des ILIKE ${searchParam} OR full_des ILIKE ${searchParam})`);
   }
 
   if (categoryId) {
@@ -83,10 +81,8 @@ function toSuggestion(product) {
   return {
     id: product.id,
     name: product.name,
-    price: product.price,
-    thumbnail: product.thumbnail,
-    thumbnail_url: product.thumbnail_url,
-    image_url: product.image_url,
+    min_price: product.min_price,
+    thumbnails: product.thumbnails,
   };
 }
 
