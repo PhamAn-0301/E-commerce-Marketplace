@@ -3,51 +3,59 @@ import { Link, useSearchParams } from 'react-router-dom';
 import styles from '../pages/Home.module.css';
 import API from '../../../shared/services/api';
 
-// Các component phụ trợ (có thể tách file riêng nếu muốn)
+// Hiển thị ảnh suggestion (autocomplete)
 function SuggestionImage({ suggestion }) {
-  const imageUrl = suggestion.image_url || suggestion.thumbnail_url || suggestion.thumbnail;
+  const imageUrl = suggestion.thumbnails;
   if (!imageUrl) {
     return <span className={styles['suggestion-placeholder']}>{suggestion.name.charAt(0)}</span>;
   }
   return <img src={imageUrl} alt={suggestion.name} />;
 }
 
+// Format giá tiền VND
 function formatPrice(value) {
   const price = Number(value);
   if (!Number.isFinite(price)) return 'Liên hệ';
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 }
 
+// Card sản phẩm kiểu Shopee: ảnh, tên, shop, mô tả ngắn, giá
 function ProductCard({ product }) {
-  const imageUrl = product.image_url || product.image || product.thumbnail_url || product.thumbnail;
-  const productName = product.name || product.title || 'Sản phẩm';
-  const price = formatPrice(product.price);
-  const stock = product.stock_quantity ?? product.stock ?? null;
+  const imageUrl = product.thumbnails;
+  const productName = product.name || 'Sản phẩm';
+  const price = formatPrice(product.min_price);
+  const shopName = product.shop_name || '';
+
   return (
-    <article className={styles['product-card']}>
-      <div className={styles['product-image-wrap']}>
-        <div className={styles['sale-tag']}>Mall</div>
-        {imageUrl ? (
-          <img src={imageUrl} alt={productName} className={styles['product-image']} />
-        ) : (
-          <div className={styles['product-image-placeholder']}>{productName.charAt(0)}</div>
-        )}
-      </div>
-      <div className={styles['product-info']}>
-        <h3>{productName}</h3>
-        <p>{product.description || 'Sản phẩm đang được mở bán.'}</p>
-        <div className={styles['product-meta']}>
-          <span>Yêu thích</span>
-          {stock !== null && <span>Còn {stock}</span>}
+    <Link to={`/products/${product.id}`} className={styles['product-card-link']}>
+      <article className={styles['product-card']}>
+        <div className={styles['product-image-wrap']}>
+          {imageUrl ? (
+            <img src={imageUrl} alt={productName} className={styles['product-image']} />
+          ) : (
+            <div className={styles['product-image-placeholder']}>{productName.charAt(0)}</div>
+          )}
         </div>
-        <div className={styles['product-footer']}>
-          <span className={styles['product-price']}>{price}</span>
-          <Link to={`/products/${product.id}`}>
-            Xem chi tiết
-          </Link>
+        <div className={styles['product-info']}>
+          <h3 className={styles['product-name']}>{productName}</h3>
+          {product.short_des && (
+            <p className={styles['product-short-des']}>{product.short_des}</p>
+          )}
+          <div className={styles['product-footer']}>
+            <span className={styles['product-price']}>{price}</span>
+            {shopName && (
+              <span className={styles['product-shop-name']}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                {shopName}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </Link>
   );
 }
 
@@ -238,7 +246,7 @@ export default function BuyerHome({ user }) {
                 >
                   <SuggestionImage suggestion={suggestion} />
                   <span>{suggestion.name}</span>
-                  <strong>{formatPrice(suggestion.price)}</strong>
+                  <strong>{formatPrice(suggestion.min_price)}</strong>
                 </button>
               ))}
             </div>

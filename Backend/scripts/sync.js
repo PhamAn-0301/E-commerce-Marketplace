@@ -17,11 +17,13 @@ function normalizeProduct(product) {
 }
 
 async function syncProductsToMeili() {
+    // JOIN với bảng shops để sync thêm shop_name vào Meilisearch
     const result = await pool.query(`
-        SELECT *
-        FROM products
-        WHERE status = 'active'
-        ORDER BY created_at DESC, id DESC
+        SELECT p.*, s.shop_name
+        FROM products p
+        LEFT JOIN shops s ON p.shop_id = s.id
+        WHERE p.status = 'active'
+        ORDER BY p.created_at DESC, p.id DESC
     `);
 
     const products = result.rows.map(normalizeProduct);

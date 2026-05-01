@@ -9,16 +9,16 @@ const PRODUCTS_INDEX = process.env.MEILI_PRODUCTS_INDEX || 'products';
 // Trạng thái sản phẩm đang hoạt động
 const ACTIVE_STATUS = 'active';
 
-// Các trường sẽ lấy về khi search sản phẩm (Meilisearch)
+// Các trường sẽ lấy về khi search sản phẩm (Meilisearch) - dùng cho listing
 const PRODUCT_SEARCH_FIELDS = [
   'id',
   'name',
   'short_des',
-  'full_des',
   'min_price',
   'status',
   'category_id',
   'shop_id',
+  'shop_name',
   'thumbnails',
   'total_stock',
   'created_at',
@@ -55,18 +55,18 @@ function buildMeiliProductFilters({ categoryId } = {}) {
  */
 function buildPostgresProductWhere({ search, categoryId } = {}) {
   const values = [ACTIVE_STATUS];
-  const conditions = ['status = $1'];
+  const conditions = ['p.status = $1'];
 
   if (search) {
     // Thêm điều kiện tìm kiếm theo tên hoặc mô tả (không phân biệt hoa thường)
     values.push(`%${search}%`);
     const searchParam = `$${values.length}`;
-    conditions.push(`(name ILIKE ${searchParam} OR short_des ILIKE ${searchParam} OR full_des ILIKE ${searchParam})`);
+    conditions.push(`(p.name ILIKE ${searchParam} OR p.short_des ILIKE ${searchParam} OR p.full_des ILIKE ${searchParam})`);
   }
 
   if (categoryId) {
     values.push(categoryId);
-    conditions.push(`category_id = $${values.length}`);
+    conditions.push(`p.category_id = $${values.length}`);
   }
 
   return { values, conditions };
@@ -127,6 +127,7 @@ const ProductModel = {
 
   /**
    * Lấy danh sách sản phẩm active từ PostgreSQL (dùng khi không có search keyword)
+   * JOIN với bảng shops để lấy shop_name hiển thị trên card
    * @param {Object} param0 { limit, offset, search, categoryId }
    * @returns {Array} Danh sách sản phẩm
    */
@@ -140,12 +141,15 @@ const ProductModel = {
     values.push(offset);
     const offsetParam = values.length;
 
-    // Truy vấn danh sách sản phẩm từ PostgreSQL
+    // Truy vấn danh sách sản phẩm từ PostgreSQL, JOIN shops để lấy shop_name
     const result = await pool.query(
-      `SELECT *
-       FROM products
+      `SELECT p.id, p.name, p.short_des, p.min_price, p.thumbnails,
+              p.total_stock, p.status, p.category_id, p.shop_id, p.created_at,
+              s.shop_name
+       FROM products p
+       LEFT JOIN shops s ON p.shop_id = s.id
        WHERE ${conditions.join(' AND ')}
-       ORDER BY created_at DESC, id DESC
+       ORDER BY p.created_at DESC, p.id DESC
        LIMIT $${limitParam} OFFSET $${offsetParam}`,
       values
     );
@@ -164,7 +168,7 @@ const ProductModel = {
     // Truy vấn đếm tổng số sản phẩm
     const result = await pool.query(
       `SELECT COUNT(*)::int AS total
-       FROM products
+       FROM products p
        WHERE ${conditions.join(' AND ')}`,
       values
     );
@@ -173,18 +177,40 @@ const ProductModel = {
   },
 
   /**
-   * Lấy chi tiết sản phẩm theo id từ PostgreSQL (database là nguồn dữ liệu thật)
+   * Lấy chi tiết sản phẩm theo id từ PostgreSQL
+   * JOIN shops để lấy thông tin shop, JOIN categories để lấy tên danh mục
    * @param {number|string} id
    * @returns {Object|null} Sản phẩm hoặc null nếu không tìm thấy
    */
   async getPublicById(id) {
-    // Truy vấn chi tiết sản phẩm theo id và trạng thái active
-    const result = await pool.query(
-      'SELECT * FROM products WHERE id = $1 AND status = $2',
+    // Query 1: Lấy thông tin sản phẩm + shop + category
+    const productResult = await pool.query(
+      `SELECT p.*,
+              s.shop_name, s.description AS shop_description,
+              c.name AS category_name
+       FROM products p
+       LEFT JOIN shops s ON p.shop_id = s.id
+       LEFT JOIN categories c ON p.category_id = c.id
+       WHERE p.id = $1 AND p.status = $2`,
       [id, ACTIVE_STATUS]
     );
 
-    return result.rows[0] || null;
+    const product = productResult.rows[0];
+    if (!product) return null;
+
+    // Query 2: Lấy danh sách biến thể (variants) của sản phẩm
+    const variantsResult = await pool.query(
+      `SELECT id, product_id, name, attribute, price, stock
+       FROM product_variants
+       WHERE product_id = $1
+       ORDER BY id ASC`,
+      [id]
+    );
+
+    // Gộp variants vào object product
+    product.variants = variantsResult.rows;
+
+    return product;
   },
 };
 
