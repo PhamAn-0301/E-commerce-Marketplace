@@ -17,8 +17,33 @@ async function createUser({ full_name, email, password_hash, phone, role }) {
         [full_name, email, password_hash, phone, role]
     );
 }
+// Tìm user theo id (dùng cho profile, đổi mật khẩu).
+async function findById(id) {
+    const result = await pool.query('SELECT * FROM "users" WHERE id = $1', [id]);
+    return result.rows[0] || null;
+}
+
+// Cập nhật thông tin cá nhân (tên, số điện thoại).
+async function updateProfile(id, { full_name, phone }) {
+    const result = await pool.query(
+        'UPDATE "users" SET full_name = $1, phone = $2, updated_at = NOW() WHERE id = $3 RETURNING id, full_name, email, phone, role',
+        [full_name, phone, id]
+    );
+    return result.rows[0] || null;
+}
+
+// Cập nhật mật khẩu (đã hash sẵn từ service).
+async function updatePassword(id, password_hash) {
+    await pool.query(
+        'UPDATE "users" SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+        [password_hash, id]
+    );
+}
 
 module.exports = {
     findByEmail,
-    createUser
+    createUser,
+    findById,
+    updateProfile,
+    updatePassword
 };

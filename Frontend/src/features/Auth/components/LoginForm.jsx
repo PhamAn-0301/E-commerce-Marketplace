@@ -12,6 +12,10 @@ export default function LoginForm({ onLogin }) {
     setError('');
     try {
       const res = await API.post('/login', { email, password });
+      // Lưu token vào localStorage để interceptor tự gắn vào mỗi request.
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+      }
       onLogin(res.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Đăng nhập thất bại');

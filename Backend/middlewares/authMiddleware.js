@@ -19,4 +19,16 @@ function authenticateJWT(req, res, next) {
     }
 }
 
-module.exports = { authenticateJWT };
+// Middleware kiểm tra role của user.
+// Chỉ cho phép user có role nằm trong danh sách roles truyền vào.
+// Phải đặt sau authenticateJWT để req.user đã có sẵn.
+function authorizeRole(...roles) {
+    return (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            return res.status(403).json({ error: 'Bạn không có quyền truy cập chức năng này' });
+        }
+        next();
+    };
+}
+
+module.exports = { authenticateJWT, authorizeRole };

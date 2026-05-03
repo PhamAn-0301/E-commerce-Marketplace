@@ -13,6 +13,7 @@ export default function Navbar({ user, onLogout }) {
         <NavLink to="/">Trang chủ</NavLink>
         {!user && <NavLink to="/login">Đăng nhập</NavLink>}
         {!user && <NavLink to="/register">Đăng ký</NavLink>}
+        {user && <NavLink to="/profile">Tài khoản</NavLink>}
         {user && <button onClick={onLogout}>Đăng xuất</button>}
       </div>
     </nav>
