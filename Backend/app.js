@@ -15,12 +15,16 @@ const protectedRoute = require('./routes/protected');
 const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const userRoutes = require('./routes/userRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const wishlistRoutes = require('./routes/wishlistRoutes');
 
 app.use('/', apiAuthRoute);
 app.use('/api/protected', protectedRoute);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/wishlist', wishlistRoutes);
 
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;

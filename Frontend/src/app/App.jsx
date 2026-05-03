@@ -5,6 +5,8 @@ import Home from '../features/buyer/pages/Home';
 import Login from '../features/Auth/pages/Login';
 import Register from '../features/Auth/pages/Register';
 import ProductDetail from '../features/buyer/pages/ProductDetail';
+import Cart from '../features/buyer/pages/Cart';
+import Wishlist from '../features/buyer/pages/Wishlist';
 import Profile from '../shared/pages/Profile';
 import Navbar from '../shared/components/Navbar/Navbar';
 import API from '../shared/services/api';
@@ -73,8 +75,10 @@ function AppLayout({ user, onLogin, onLogout, setUser }) {
           <Route path="/" element={<Home user={user} />} />
           <Route path="/login" element={<Login onLogin={onLogin} />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/products/:id" element={<ProductDetail />} />
+          <Route path="/products/:id" element={<ProductDetail user={user} />} />
           <Route path="/profile" element={user ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" replace />} />
+          <Route path="/cart" element={user && user.role !== 'seller' ? <Cart user={user} /> : <Navigate to="/" replace />} />
+          <Route path="/wishlist" element={user && user.role !== 'seller' ? <Wishlist /> : <Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

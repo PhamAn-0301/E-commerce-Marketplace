@@ -85,12 +85,17 @@ function ShopInfo({ product }) {
   );
 }
 
-export default function ProductDetail() {
+export default function ProductDetail({ user }) {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
+  const [inWishlist, setInWishlist] = useState(false);
+  const [togglingWishlist, setTogglingWishlist] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -124,6 +129,24 @@ export default function ProductDetail() {
       isMounted = false;
     };
   }, [id]);
+
+  // Kiểm tra trạng thái wishlist mỗi khi đổi variant
+  useEffect(() => {
+    let isMounted = true;
+    if (!product || !selectedVariant) return;
+
+    async function checkWishlist() {
+      try {
+        const res = await API.get(`/api/wishlist/check/${product.id}/${selectedVariant.id}`);
+        if (isMounted) setInWishlist(res.data.in_wishlist);
+      } catch (err) {
+        // Có thể chưa đăng nhập, bỏ qua
+      }
+    }
+    checkWishlist();
+
+    return () => { isMounted = false; };
+  }, [product, selectedVariant]);
 
   if (loading) {
     return (
@@ -166,6 +189,75 @@ export default function ProductDetail() {
   // Giá và tồn kho theo variant đang chọn
   const displayPrice = selectedVariant ? formatPrice(selectedVariant.price) : null;
   const displayStock = selectedVariant ? selectedVariant.stock : product.total_stock;
+
+  const handleQuantityChange = (delta) => {
+    let newQ = quantity + delta;
+    if (newQ < 1) newQ = 1;
+    if (newQ > 20) newQ = 20;
+    if (displayStock && newQ > displayStock) newQ = displayStock;
+    setQuantity(newQ);
+  };
+
+  const handleQuantityInput = (e) => {
+    let val = parseInt(e.target.value);
+    if (isNaN(val)) return;
+    if (val < 1) val = 1;
+    if (val > 20) val = 20;
+    if (displayStock && val > displayStock) val = displayStock;
+    setQuantity(val);
+  };
+
+  const handleAddToCart = async () => {
+    if (!selectedVariant) {
+      setMessage({ type: 'error', text: 'Vui lòng chọn phân loại hàng.' });
+      return;
+    }
+    setAddingToCart(true);
+    setMessage({ type: '', text: '' });
+    try {
+      const res = await API.post('/api/cart/add', {
+        product_id: product.id,
+        variant_id: selectedVariant.id,
+        quantity: quantity
+      });
+      setMessage({ type: 'success', text: res.data.message || 'Đã thêm vào giỏ hàng!' });
+      // Báo cho Navbar biết để cập nhật số lượng
+      window.dispatchEvent(new Event('cartUpdated'));
+    } catch (err) {
+      // Bắt lỗi khi chưa đăng nhập (401, 403)
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setMessage({ type: 'error', text: 'Vui lòng đăng nhập để thêm vào giỏ hàng.' });
+      } else {
+        setMessage({ type: 'error', text: err.response?.data?.error || 'Lỗi thêm giỏ hàng.' });
+      }
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!selectedVariant) {
+      setMessage({ type: 'error', text: 'Vui lòng chọn phân loại hàng.' });
+      return;
+    }
+    setTogglingWishlist(true);
+    try {
+      const res = await API.post('/api/wishlist/toggle', {
+        product_id: product.id,
+        variant_id: selectedVariant.id
+      });
+      setInWishlist(res.data.in_wishlist);
+      setMessage({ type: 'success', text: res.data.message });
+    } catch (err) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setMessage({ type: 'error', text: 'Vui lòng đăng nhập để thêm vào yêu thích.' });
+      } else {
+        setMessage({ type: 'error', text: 'Lỗi cập nhật danh sách yêu thích.' });
+      }
+    } finally {
+      setTogglingWishlist(false);
+    }
+  };
 
   return (
     <main className={styles.detail}>
@@ -223,27 +315,71 @@ export default function ProductDetail() {
             onSelect={setSelectedVariant}
           />
 
-          {/* Số lượng tồn kho */}
-          {displayStock !== null && displayStock !== undefined && (
-            <div className={styles.stockInfo}>
-              <span className={styles.stockLabel}>Kho hàng:</span>
+          {/* Số lượng tồn kho & Input số lượng */}
+          <div className={styles.quantitySection}>
+            <span className={styles.quantityLabel}>Số lượng:</span>
+            <div className={styles.quantityControl}>
+              <button 
+                type="button" 
+                className={styles.qtyBtn} 
+                onClick={() => handleQuantityChange(-1)}
+                disabled={quantity <= 1}
+              >-</button>
+              <input 
+                type="text" 
+                className={styles.qtyInput} 
+                value={quantity} 
+                onChange={handleQuantityInput} 
+              />
+              <button 
+                type="button" 
+                className={styles.qtyBtn} 
+                onClick={() => handleQuantityChange(1)}
+                disabled={quantity >= 20 || quantity >= displayStock}
+              >+</button>
+            </div>
+            {displayStock !== null && displayStock !== undefined && (
               <span className={styles.stockValue}>{displayStock} sản phẩm có sẵn</span>
+            )}
+          </div>
+          
+          {message.text && (
+            <div className={`${styles.actionMessage} ${message.type === 'error' ? styles.msgError : styles.msgSuccess}`}>
+              {message.text}
             </div>
           )}
 
           {/* Nút hành động */}
-          <div className={styles.actions}>
-            <button type="button" className={styles.addToCart}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-              </svg>
-              Thêm vào giỏ hàng
-            </button>
-            <button type="button" className={styles.buyNow}>
-              Mua ngay
-            </button>
-          </div>
+          {(!user || user.role !== 'seller') && (
+            <div className={styles.actions}>
+              <button 
+                type="button" 
+                className={styles.addToCart} 
+                onClick={handleAddToCart}
+                disabled={addingToCart || displayStock < 1}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                Thêm vào giỏ hàng
+              </button>
+              <button type="button" className={styles.buyNow}>
+                Mua ngay
+              </button>
+              <button 
+                type="button" 
+                className={`${styles.wishlistBtn} ${inWishlist ? styles.activeWishlist : ''}`}
+                onClick={handleToggleWishlist}
+                disabled={togglingWishlist || !selectedVariant}
+                title={inWishlist ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill={inWishlist ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

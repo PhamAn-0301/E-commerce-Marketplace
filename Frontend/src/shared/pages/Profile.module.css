@@ -1,8 +1,16 @@
 /* ============= Profile Page Layout ============= */
 
+.profile-page {
+  max-width: 1000px;
+  margin: 28px auto 40px;
+  padding: 0 16px;
+}
+
 .profile-container {
-  max-width: 720px;
-  margin: 28px auto 0;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  align-items: start;
 }
 
 .profile-header {
@@ -54,6 +62,48 @@
   font-size: 0.78rem;
   font-weight: 700;
   margin-top: 6px;
+}
+
+/* ============= Sidebar Navigation ============= */
+
+.profile-sidebar {
+  background: #fff;
+  border: 1px solid #eef0f3;
+  border-radius: 10px;
+  padding: 12px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: #f9fafb;
+  color: #ee4d2d;
+}
+
+.sidebar-item.active {
+  color: #ee4d2d;
+  background: #fff7ed;
+  border-left-color: #ee4d2d;
+}
+
+.sidebar-item svg {
+  color: inherit;
+}
+
+.profile-content {
+  min-width: 0;
 }
 
 /* ============= Form Card ============= */
@@ -196,11 +246,31 @@
 
 /* ============= Responsive ============= */
 
-@media (max-width: 560px) {
+@media (max-width: 768px) {
   .profile-container {
-    margin-top: 16px;
+    grid-template-columns: 1fr;
   }
+  
+  .profile-sidebar {
+    display: flex;
+    overflow-x: auto;
+    padding: 0;
+  }
+  
+  .sidebar-item {
+    padding: 14px 16px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+  
+  .sidebar-item.active {
+    border-left-color: transparent;
+    border-bottom-color: #ee4d2d;
+  }
+}
 
+@media (max-width: 560px) {
   .profile-header {
     flex-direction: column;
     text-align: center;

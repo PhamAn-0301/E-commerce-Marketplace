@@ -246,6 +246,82 @@
   font-weight: 500;
 }
 
+/* ============= Quantity ============= */
+
+.quantitySection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.quantityLabel {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.quantityControl {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 32px;
+}
+
+.qtyBtn {
+  background: #f9fafb;
+  border: none;
+  width: 32px;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.qtyBtn:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.qtyBtn:disabled {
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.qtyInput {
+  width: 50px;
+  height: 100%;
+  border: none;
+  border-left: 1px solid #d1d5db;
+  border-right: 1px solid #d1d5db;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #111827;
+  outline: none;
+}
+
+.actionMessage {
+  padding: 10px 14px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.msgError {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.msgSuccess {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
 /* ============= Actions ============= */
 
 .actions {
@@ -272,8 +348,13 @@
   transition: all 0.18s ease;
 }
 
-.addToCart:hover {
+.addToCart:hover:not(:disabled) {
   background: rgba(238, 77, 45, 0.15);
+}
+
+.addToCart:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .buyNow {
@@ -295,6 +376,38 @@
 
 .buyNow:hover {
   background: #d63a20;
+}
+
+.wishlistBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #fff;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.wishlistBtn:hover:not(:disabled) {
+  border-color: #ee4d2d;
+  color: #ee4d2d;
+  background: #fff7ed;
+}
+
+.wishlistBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.activeWishlist {
+  color: #ef4444;
+  border-color: #ef4444;
+  background: #fef2f2;
 }
 
 /* ============= Description Section ============= */
