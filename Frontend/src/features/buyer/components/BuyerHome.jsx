@@ -88,7 +88,12 @@ function ProductSection({ products, pagination, loading, error, search }) {
     return <div className={styles['product-error']}>{error}</div>;
   }
   if (!products.length) {
-    return <div className={styles['product-state']}>Chưa có sản phẩm nào để hiển thị.</div>;
+    return (
+      <section className={styles['product-section']}>
+        <ProductHeading pagination={pagination} search={search} />
+        <div className={styles['product-state']}>Chưa có sản phẩm nào để hiển thị.</div>
+      </section>
+    );
   }
   return (
     <section className={styles['product-section']}>
@@ -107,7 +112,9 @@ export default function BuyerHome({ user }) {
   // useSearchParams giúp đọc/ghi query string trên URL.
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('search') || '';
+  const categoryId = searchParams.get('category_id') || '';
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [searchInput, setSearchInput] = useState(search);
   const [suggestions, setSuggestions] = useState([]);
@@ -118,12 +125,23 @@ export default function BuyerHome({ user }) {
 
   useEffect(() => {
     let isMounted = true;
+    
+    // Tải danh mục 1 lần khi render
+    async function fetchCategories() {
+      try {
+        const response = await API.get('/api/categories');
+        if (isMounted) setCategories(response.data.categories || []);
+      } catch (err) {
+        console.error('Lỗi tải danh mục:', err);
+      }
+    }
+    
     async function fetchProducts() {
       try {
         setLoading(true);
         setError('');
         const response = await API.get('/api/products', {
-          params: { page: 1, limit: 20, search },
+          params: { page: 1, limit: 20, search, category_id: categoryId },
         });
         if (isMounted) {
           setProducts(response.data.products || []);
@@ -137,9 +155,11 @@ export default function BuyerHome({ user }) {
         if (isMounted) setLoading(false);
       }
     }
+    
+    fetchCategories();
     fetchProducts();
     return () => { isMounted = false; };
-  }, [search]);
+  }, [search, categoryId]);
 
   useEffect(() => {
     const keyword = searchInput.trim();
@@ -186,24 +206,40 @@ export default function BuyerHome({ user }) {
   const handleSearchSubmit = (event) => {
     event.preventDefault();
     const keyword = searchInput.trim();
+    const newParams = new URLSearchParams(searchParams);
     if (keyword) {
-      setSearchParams({ search: keyword });
+      newParams.set('search', keyword);
     } else {
-      setSearchParams({});
+      newParams.delete('search');
     }
+    setSearchParams(newParams);
     setSuggestions([]);
   };
 
   const clearSearch = () => {
     setSearchInput('');
     setSuggestions([]);
-    setSearchParams({});
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('search');
+    setSearchParams(newParams);
   };
 
   const applySuggestion = (suggestion) => {
     setSearchInput(suggestion.name);
     setSuggestions([]);
-    setSearchParams({ search: suggestion.name });
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('search', suggestion.name);
+    setSearchParams(newParams);
+  };
+
+  const handleCategoryClick = (id) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (id === '') {
+      newParams.delete('category_id');
+    } else {
+      newParams.set('category_id', id);
+    }
+    setSearchParams(newParams);
   };
 
   const displayName = user?.full_name || user?.name || user?.email;
@@ -258,13 +294,61 @@ export default function BuyerHome({ user }) {
           )}
         </form>
       </section>
-      <ProductSection
-        products={products}
-        pagination={pagination}
-        loading={loading}
-        error={error}
-        search={search}
-      />
+
+      <div className={styles['main-content']}>
+        <aside className={styles['category-sidebar']}>
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            Danh mục
+          </h3>
+          <ul className={styles['category-list']}>
+            <li className={styles['category-item']}>
+              <button
+                className={`${styles['category-btn']} ${!categoryId ? styles.active : ''}`}
+                onClick={() => handleCategoryClick('')}
+              >
+                Tất cả sản phẩm
+              </button>
+            </li>
+            {categories.map(cat => (
+              <li key={cat.id} className={styles['category-item']}>
+                <button
+                  className={`${styles['category-btn']} ${String(categoryId) === String(cat.id) ? styles.active : ''}`}
+                  onClick={() => handleCategoryClick(cat.id)}
+                >
+                  {cat.name}
+                </button>
+                {cat.children && cat.children.length > 0 && (
+                  <ul className={styles['subcategory-list']}>
+                    {cat.children.map(sub => (
+                      <li key={sub.id}>
+                        <button
+                          className={`${styles['subcategory-btn']} ${String(categoryId) === String(sub.id) ? styles.active : ''}`}
+                          onClick={() => handleCategoryClick(sub.id)}
+                        >
+                          {sub.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        <ProductSection
+          products={products}
+          pagination={pagination}
+          loading={loading}
+          error={error}
+          search={search}
+        />
+      </div>
     </div>
   );
 }

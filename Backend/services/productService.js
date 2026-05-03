@@ -1,4 +1,5 @@
 const ProductModel = require('../models/productModel');
+const CategoryModel = require('../models/categoryModel');
 
 function getOffset(page, limit) {
   return (page - 1) * limit;
@@ -19,13 +20,18 @@ const ProductService = {
   // Không search: dùng PostgreSQL để lấy danh sách mặc định mới nhất.
   async getHomeProducts({ page, limit, search, categoryId }) {
     const offset = getOffset(page, limit);
+    
+    let categoryIds = [];
+    if (categoryId) {
+      categoryIds = await CategoryModel.getCategoryAndChildrenIds(categoryId);
+    }
 
     if (search) {
       const result = await ProductModel.searchProductsWithMeili({
         search,
         limit,
         offset,
-        categoryId,
+        categoryIds,
       });
 
       return {
@@ -35,8 +41,8 @@ const ProductService = {
     }
 
     const [products, total] = await Promise.all([
-      ProductModel.getActiveProductsFromDb({ limit, offset, search, categoryId }),
-      ProductModel.countActiveProductsFromDb({ search, categoryId }),
+      ProductModel.getActiveProductsFromDb({ limit, offset, search, categoryIds }),
+      ProductModel.countActiveProductsFromDb({ search, categoryIds }),
     ]);
 
     return {

@@ -37,11 +37,11 @@ const PRODUCT_SUGGESTION_FIELDS = [
  * @param {Object} param0
  * @returns {Array} Mảng filter cho Meilisearch
  */
-function buildMeiliProductFilters({ categoryId } = {}) {
+function buildMeiliProductFilters({ categoryIds } = {}) {
   const filters = [`status = ${ACTIVE_STATUS}`];
 
-  if (categoryId) {
-    filters.push(`category_id = ${categoryId}`);
+  if (categoryIds && categoryIds.length > 0) {
+    filters.push(`category_id IN [${categoryIds.join(', ')}]`);
   }
 
   return filters;
@@ -53,7 +53,7 @@ function buildMeiliProductFilters({ categoryId } = {}) {
  * @param {Object} param0
  * @returns {Object} { values, conditions }
  */
-function buildPostgresProductWhere({ search, categoryId } = {}) {
+function buildPostgresProductWhere({ search, categoryIds } = {}) {
   const values = [ACTIVE_STATUS];
   const conditions = ['p.status = $1'];
 
@@ -64,9 +64,9 @@ function buildPostgresProductWhere({ search, categoryId } = {}) {
     conditions.push(`(p.name ILIKE ${searchParam} OR p.short_des ILIKE ${searchParam} OR p.full_des ILIKE ${searchParam})`);
   }
 
-  if (categoryId) {
-    values.push(categoryId);
-    conditions.push(`p.category_id = $${values.length}`);
+  if (categoryIds && categoryIds.length > 0) {
+    values.push(categoryIds);
+    conditions.push(`p.category_id = ANY($${values.length}::bigint[])`);
   }
 
   return { values, conditions };
@@ -93,12 +93,12 @@ const ProductModel = {
    * @param {Object} param0 { search, limit, offset, categoryId }
    * @returns {Object} { products, total }
    */
-  async searchProductsWithMeili({ search, limit, offset, categoryId }) {
+  async searchProductsWithMeili({ search, limit, offset, categoryIds }) {
     // Gọi Meilisearch để tìm kiếm sản phẩm
     const result = await meiliClient.index(PRODUCTS_INDEX).search(search, {
       limit,
       offset,
-      filter: buildMeiliProductFilters({ categoryId }),
+      filter: buildMeiliProductFilters({ categoryIds }),
       attributesToRetrieve: PRODUCT_SEARCH_FIELDS,
     });
 
@@ -131,9 +131,9 @@ const ProductModel = {
    * @param {Object} param0 { limit, offset, search, categoryId }
    * @returns {Array} Danh sách sản phẩm
    */
-  async getActiveProductsFromDb({ limit, offset, search, categoryId }) {
+  async getActiveProductsFromDb({ limit, offset, search, categoryIds }) {
     // Xây dựng điều kiện WHERE và giá trị truy vấn
-    const { values, conditions } = buildPostgresProductWhere({ search, categoryId });
+    const { values, conditions } = buildPostgresProductWhere({ search, categoryIds });
 
     // Thêm limit và offset vào values
     values.push(limit);
@@ -162,8 +162,8 @@ const ProductModel = {
    * @param {Object} param0 { search, categoryId }
    * @returns {number} Tổng số sản phẩm
    */
-  async countActiveProductsFromDb({ search, categoryId }) {
-    const { values, conditions } = buildPostgresProductWhere({ search, categoryId });
+  async countActiveProductsFromDb({ search, categoryIds }) {
+    const { values, conditions } = buildPostgresProductWhere({ search, categoryIds });
 
     // Truy vấn đếm tổng số sản phẩm
     const result = await pool.query(

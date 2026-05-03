@@ -13,10 +13,12 @@ app.use(cors({
 const apiAuthRoute = require('./routes/apiAuth');
 const protectedRoute = require('./routes/protected');
 const productRoutes = require('./routes/productRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 app.use('/', apiAuthRoute);
 app.use('/api/protected', protectedRoute);
 app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
