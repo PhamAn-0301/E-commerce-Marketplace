@@ -66,21 +66,70 @@ function VariantSelector({ variants, selectedVariant, onSelect }) {
 }
 
 // Thông tin shop
-function ShopInfo({ product }) {
+function ShopInfo({ product, currentUser }) {
   const shopName = product.shop_name;
   if (!shopName) return null;
 
+  // Không hiển thị nút chat nếu là cửa hàng của chính mình
+  const isOwnShop = currentUser && currentUser.role === 'seller' && currentUser.shop?.id === product.shop_id;
+
+  const handleChat = () => {
+    if (!currentUser) {
+      alert('Vui lòng đăng nhập để chat với shop.');
+      return;
+    }
+    // Gửi event để mở Widget Chat
+    window.dispatchEvent(new CustomEvent('openChatWithShop', {
+      detail: { shopId: product.shop_id }
+    }));
+  };
+
   return (
-    <div className={styles['shop-info']}>
-      <div className={styles['shop-avatar']}>
-        {shopName.charAt(0).toUpperCase()}
+    <div className={styles['shop-info']} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className={styles['shop-avatar']}>
+          {shopName.charAt(0).toUpperCase()}
+        </div>
+        <div className={styles['shop-details']}>
+          <span className={styles['shop-name']}>{shopName}</span>
+          {product.shop_description && (
+            <span className={styles['shop-desc']}>{product.shop_description}</span>
+          )}
+        </div>
       </div>
-      <div className={styles['shop-details']}>
-        <span className={styles['shop-name']}>{shopName}</span>
-        {product.shop_description && (
-          <span className={styles['shop-desc']}>{product.shop_description}</span>
-        )}
-      </div>
+      
+      {!isOwnShop && (
+        <button
+          type="button"
+          onClick={handleChat}
+          style={{
+            background: 'white',
+            border: '1.5px solid #2563eb',
+            color: '#2563eb',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '13px',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.2s ease',
+            outline: 'none'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#eff6ff';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'white';
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Chat ngay
+        </button>
+      )}
     </div>
   );
 }
@@ -301,7 +350,7 @@ export default function ProductDetail({ user }) {
           </div>
 
           {/* Thông tin shop */}
-          <ShopInfo product={product} />
+          <ShopInfo product={product} currentUser={user} />
 
           {/* Mô tả ngắn */}
           {product.short_des && (

@@ -10,6 +10,7 @@ import Wishlist from '../features/buyer/pages/Wishlist';
 import Profile from '../shared/pages/Profile';
 import Navbar from '../shared/components/Navbar/Navbar';
 import API from '../shared/services/api';
+import ChatWidget from '../shared/components/ChatWidget/ChatWidget';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -82,6 +83,7 @@ function AppLayout({ user, onLogin, onLogout, setUser }) {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+      <ChatWidget user={user} />
     </div>
   );
 }
