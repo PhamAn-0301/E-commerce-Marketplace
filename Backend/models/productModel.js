@@ -212,6 +212,23 @@ const ProductModel = {
 
     return product;
   },
+
+  /**
+   * Lấy gợi ý sản phẩm (autocomplete) từ PostgreSQL (dùng làm fallback khi Meilisearch lỗi)
+   * @param {Object} param0 { keyword, limit }
+   * @returns {Array} Danh sách suggestion
+   */
+  async getSearchSuggestionsFromDb({ keyword, limit }) {
+    const result = await pool.query(
+      `SELECT id, name, min_price, thumbnails
+       FROM products
+       WHERE status = $1 AND name ILIKE $2
+       LIMIT $3`,
+      [ACTIVE_STATUS, `%${keyword}%`, limit]
+    );
+
+    return result.rows.map(toSuggestion);
+  },
 };
 
 // Export object ProductModel để các file khác import và sử dụng các hàm bên trong

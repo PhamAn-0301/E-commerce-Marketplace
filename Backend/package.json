@@ -6,6 +6,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "service": "node service.js",
+    "dev:all": "node start-all.js",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {

@@ -27,17 +27,31 @@ const ProductService = {
     }
 
     if (search) {
-      const result = await ProductModel.searchProductsWithMeili({
-        search,
-        limit,
-        offset,
-        categoryIds,
-      });
+      try {
+        const result = await ProductModel.searchProductsWithMeili({
+          search,
+          limit,
+          offset,
+          categoryIds,
+        });
 
-      return {
-        products: result.products,
-        pagination: createPagination({ page, limit, total: result.total }),
-      };
+        return {
+          products: result.products,
+          pagination: createPagination({ page, limit, total: result.total }),
+        };
+      } catch (err) {
+        console.warn('Meilisearch error, falling back to PostgreSQL search:', err.message);
+        // Fallback to PostgreSQL
+        const [products, total] = await Promise.all([
+          ProductModel.getActiveProductsFromDb({ limit, offset, search, categoryIds }),
+          ProductModel.countActiveProductsFromDb({ search, categoryIds }),
+        ]);
+
+        return {
+          products,
+          pagination: createPagination({ page, limit, total }),
+        };
+      }
     }
 
     const [products, total] = await Promise.all([
@@ -64,7 +78,12 @@ const ProductService = {
       return [];
     }
 
-    return await ProductModel.getSearchSuggestionsWithMeili({ keyword, limit });
+    try {
+      return await ProductModel.getSearchSuggestionsWithMeili({ keyword, limit });
+    } catch (err) {
+      console.warn('Meilisearch error, falling back to PostgreSQL for suggestions:', err.message);
+      return await ProductModel.getSearchSuggestionsFromDb({ keyword, limit });
+    }
   },
 };
 
